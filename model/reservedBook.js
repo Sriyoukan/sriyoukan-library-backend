@@ -5,6 +5,7 @@ var crypto = require('crypto')
 var reservedBookSchema = new Schema({
     title :{type:String},
     borrower: String,
+    onHand:Boolean,
     returnDate:Date
 })
 

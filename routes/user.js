@@ -24,6 +24,7 @@ router.post('/user',(req,res,next)=>{
     user.name=req.body.name,
     user.age=req.body.age,
     user.Id=req.body.Id,
+    user.isAdmin = req.body.isAdmin
     
 
     user.setPassword(req.body.password)
