@@ -6,7 +6,9 @@ var reservedBookSchema = new Schema({
     title :{type:String},
     borrower: String,
     onHand:Boolean,
-    returnDate:Date
+    returnDate:Date,
+    penalty:Number,
+    overDue:Boolean
 })
 
 

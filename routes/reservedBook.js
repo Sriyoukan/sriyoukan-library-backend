@@ -8,10 +8,34 @@ var User = require('../model/user')
 var bp = require('body-parser')
 router.use(express.json())
 
-router.post('/reservedBook',(req,res,next)=>{
+router.post('/reservedUpdate',(req,res,next)=>{
+    var D = new Date();
     ReservedBook.find({borrower:req.body.borrower},(err,data)=>{
         if(err){
-            return next(err)
+            return err
+        }else{
+            data.forEach(element => {
+                if(D.getDate()>element.returnDate.getDate() && element.onHand == false){
+                ReservedBook.deleteOne({title:element.title, borrower:element.borrower},{new:true},(err,data)=>{
+                    if(err){
+                        return err
+                    }else{
+                        return data
+                    }
+                })
+                }
+            });
+            res.status(200)
+        }
+    })
+})
+
+
+router.post('/reservedBook',(req,res,next)=>{
+    
+    ReservedBook.find({borrower:req.body.borrower},(err,data)=>{
+        if(err){
+            return err
         }else{
             res.status(200).json(data)
         }
@@ -37,7 +61,9 @@ router.post('/userReserveBook', function(req, res, next) {
     reservedBook.title = req.body.title,
     reservedBook.borrower = req.body.borrower,
     reservedBook.onHand = false,
-    reservedBook.returnDate = D.setDate( D.getDate() + 1)
+    reservedBook.returnDate = D.setDate( D.getDate() + 1),
+    reservedBook.penalty = 0,
+    reservedBook.overDue = false
     reservedBook.save((err,data)=>{
         if(err){
             return err
