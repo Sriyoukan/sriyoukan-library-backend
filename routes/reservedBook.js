@@ -134,6 +134,15 @@ router.post('/returnBook',(req,res,next)=>{
         
     })
 })
+router.post('/searchReserved',(req,res,next)=>{
+    ReservedBook.find({borrower:req.body.search},(err,data)=>{
+        if(err){
+            return err
+        }else{
+            res.status(200).json(data)
+        }
+    })
+})
 
 
 module.exports = router;

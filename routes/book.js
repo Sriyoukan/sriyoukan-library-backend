@@ -44,5 +44,14 @@ router.post('/book', function(req, res, next) {
     })
        
  })
+ router.post('/search',(req,res,next)=>{
+     Book.find({title:{ "$regex": req.body.search, "$options": "i" }},(err,data)=>{
+         if(err){
+             return err
+         }else{
+             res.status(200).json(data)
+         }
+     })
+ })
 
 module.exports = router;
