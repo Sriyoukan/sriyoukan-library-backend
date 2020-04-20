@@ -57,42 +57,52 @@ router.post('/userReserveBook', function(req, res, next) {
     var D = new Date()
     
     //this.number = this.number - 1
-    
-    reservedBook.title = req.body.title,
-    reservedBook.borrower = req.body.borrower,
-    reservedBook.onHand = false,
-    reservedBook.returnDate = D.setDate( D.getDate() + 1),
-    reservedBook.penalty = 0,
-    reservedBook.overDue = false
-    reservedBook.save((err,data)=>{
+    ReservedBook.find({title:req.body.title,borrower:req.body.borrower},(err,data)=>{
         if(err){
             return err
         }else{
-            Book.findOne({title:data.title},(err,data)=>{
-                if(err){
+            if(data.length !=0){
+                res.status(200).json(data)
+            }else{
+                reservedBook.title = req.body.title,
+                reservedBook.borrower = req.body.borrower,
+                reservedBook.onHand = false,
+                reservedBook.returnDate = D.setDate( D.getDate() + 1),
+                reservedBook.penalty = 0,
+                reservedBook.overDue = false
+    
+                reservedBook.save((err,data)=>{
+                 if(err){
                     return err
-                }else{
-                    
-                    this.number = data.numberOfCopiesAvailable
-                    if(this.number>0){
-                    Book.update({title:data.title},{ numberOfCopiesAvailable:this.number-1},{ new: true },(err,data,next)=>{
-                        if(err){
-                            return err
-                        }else{
-                            res.status(200).json(data)
-                        }
-                    })
                     }else{
-                        res.send().status(500)
-                    }
+                        Book.findOne({title:data.title},(err,data)=>{
+                            if(err){
+                                return err
+                            }else{
                     
-                }
+                        this.number = data.numberOfCopiesAvailable
+                        if(this.number>0){
+                        
+                            Book.update({title:data.title},{ numberOfCopiesAvailable:this.number-1},{ new: true },(err,data,next)=>{
+                            if(err){
+                                return err
+                            }else{
+                                res.status(200).send()
+                                }
+                            })
+                        }else{
+                         res.send().status(500)
+                        }
+                    
+                        }   
+                    })
+            
+            
+             }
             })
-            
-            
+            }
         }
-       
- })
+})
 })
 
 router.post('/adminAcceptBook',(req,res,next)=>{

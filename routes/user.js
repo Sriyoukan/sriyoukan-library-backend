@@ -33,7 +33,7 @@ router.post('/user',(req,res,next)=>{
     if (err){
       return next(err);
     }else {
-      res.send(user)
+      res.status(200).json(user)
         }
     })
 
