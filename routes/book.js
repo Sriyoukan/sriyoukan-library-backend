@@ -5,9 +5,11 @@ var router = express.Router();
 var multer  = require('multer')
 var upload = multer({ dest: 'uploads/' })
 var Book = require('../model/book')
+var History = require('../model/history')
 var bp = require('body-parser')
 router.use(express.json())
 
+// to get book by title
 router.get('/book',(req,res,next)=>{
     Book.find({title:req.body.title},(err,data)=>{
         if(err){
@@ -18,6 +20,7 @@ router.get('/book',(req,res,next)=>{
     })
 })
 
+// to get all books from db
 router.get('/allBook',(req,res,next)=>{
     Book.find((err,data)=>{
         if(err){
@@ -28,6 +31,7 @@ router.get('/allBook',(req,res,next)=>{
     })
 })
 
+// later
 router.post('/uploadfile', upload.single('file'), (req, res, next) => {
     const file = req.file
     if (!file) {
@@ -79,8 +83,31 @@ router.post('/addbook', (req, res, next) => {
     addBook(req, res);
 })
 
+// later
 router.post('/search',(req,res,next)=>{
     Book.find({title:{ "$regex": req.body.search, "$options": "i" }},(err,data)=>{
+        if(err){
+            return err
+        }else{
+            res.status(200).json(data)
+        }
+    })
+})
+
+// search books by using category
+router.get('/category', (req, res, next) => {
+    Book.find({category: req.body.category}, (err,data)=>{
+        if(err){
+            return err
+        }else{
+            res.status(200).json(data)
+        }
+    })
+})
+
+// to get history of book transactions
+router.get('/history', (req, res, next) => {
+    History.find((err,data)=>{
         if(err){
             return err
         }else{

@@ -1,7 +1,7 @@
 var express = require('express');
 var router = express.Router();
-var bcrypt = require('bcrypt')
-var crypto = require('crypto');
+// var bcrypt = require('bcrypt')
+// var crypto = require('crypto');
 var ReservedBook = require('../model/reservedBook')
 var Book = require('../model/book')
 var User = require('../model/user')
@@ -30,7 +30,6 @@ router.post('/reservedUpdate',(req,res,next)=>{
     })
 })
 
-
 router.post('/reservedBook',(req,res,next)=>{
     
     ReservedBook.find({borrower:req.body.borrower},(err,data)=>{
@@ -41,6 +40,8 @@ router.post('/reservedBook',(req,res,next)=>{
         }
     })
 })
+
+// to get all reserved books (admin request)
 router.get('/allReserved',(req,res,next)=>{
     ReservedBook.find((err,data)=>{
         if(err){
@@ -50,7 +51,6 @@ router.get('/allReserved',(req,res,next)=>{
         }
     })
 })
-
 
 router.post('/userReserveBook', function(req, res, next) {
     var reservedBook = new ReservedBook()
@@ -116,7 +116,6 @@ router.post('/adminAcceptBook',(req,res,next)=>{
     })
 })
 
-
 router.post('/returnBook',(req,res,next)=>{
     Book.findOne({title:req.body.title},(err,data)=>{
         if(err){
@@ -144,6 +143,7 @@ router.post('/returnBook',(req,res,next)=>{
         
     })
 })
+
 router.post('/searchReserved',(req,res,next)=>{
     ReservedBook.find({borrower:req.body.search},(err,data)=>{
         if(err){
