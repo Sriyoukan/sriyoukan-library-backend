@@ -38,21 +38,45 @@ router.post('/uploadfile', upload.single('file'), (req, res, next) => {
     res.send(file)
 })
 
-router.post('/book', function(req, res, next) {
-    var book = new Book()
-       
-    book.title = req.body.title,
-    book.author = req.body.author,
-    book.numberOfCopiesAvailable = req.body.numberOfCopiesAvailable
-    book.totalCopies = req.body.totalCopies
+// to add books to the database
+router.post('/addbook', (req, res, next) => {
+    async function addBook(request, response){
+        const docs = await Book.find({title: request.body.title});
+    
+        if(docs.length === 0) { // new book
+            const book = new Book()
+            book.title = request.body.title
+            book.author = request.body.author
+            book.category = request.body.category
+            book.availableCopies = Number(request.body.numberOfCopies)
+            book.totalCopies = Number(request.body.numberOfCopies)
 
-    book.save((err)=>{
-        if(err){
-            return err
-        }else{
-            return res.send(book)
+            await book.save((err) => {
+                if(err){
+                    return err
+                }else{
+                    return response.send(book)
+                }
+            })
+            console.log("book added successfully");
         }
-    })   
+        else { // already existing book
+            console.log(typeof(request.body.numberOfCopies))
+            docs[0].availableCopies = docs[0].availableCopies + Number(request.body.numberOfCopies);
+            docs[0].totalCopies = docs[0].totalCopies + Number(request.body.numberOfCopies);
+            
+            await docs[0].save((err) => {
+                if(err){
+                    return err
+                }else{
+                    return response.send(docs[0])
+                }
+            })
+            console.log("book updated successfully");
+        }
+    }
+
+    addBook(req, res);
 })
 
 router.post('/search',(req,res,next)=>{
