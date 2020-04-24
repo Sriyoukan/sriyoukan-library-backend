@@ -42,7 +42,7 @@ router.post('/uploadfile', upload.single('file'), (req, res, next) => {
     res.send(file)
 })
 
-// to add books to the database
+// to insert or update an book document
 router.post('/addbook', (req, res, next) => {
     async function addBook(request, response){
         const docs = await Book.find({title: request.body.title});
@@ -52,8 +52,17 @@ router.post('/addbook', (req, res, next) => {
             book.title = request.body.title
             book.author = request.body.author
             book.category = request.body.category
-            book.availableCopies = Number(request.body.numberOfCopies)
-            book.totalCopies = Number(request.body.numberOfCopies)
+
+            const copies = Number(request.body.numberOfCopies)
+            book.availableCopies = copies
+            book.totalCopies = copies
+
+            // create unique ID for each book copy
+            let bookArray = [];
+            for(i=1; i<=copies; i++) {
+                bookArray.push(request.body.title + "_" + String(i));
+            }
+            book.bookIDs = bookArray
 
             await book.save((err) => {
                 if(err){
@@ -65,10 +74,16 @@ router.post('/addbook', (req, res, next) => {
             console.log("book added successfully");
         }
         else { // already existing book
-            console.log(typeof(request.body.numberOfCopies))
-            docs[0].availableCopies = docs[0].availableCopies + Number(request.body.numberOfCopies);
-            docs[0].totalCopies = docs[0].totalCopies + Number(request.body.numberOfCopies);
+            const existCopies = docs[0].totalCopies
+            const addedCopies = Number(request.body.numberOfCopies)
+            docs[0].availableCopies = docs[0].availableCopies + addedCopies
+            docs[0].totalCopies = existCopies + addedCopies
             
+            // create unique ID for each added book copy
+            for(i=1; i<=addedCopies; i++) {
+                docs[0].bookIDs.push(request.body.title + "_" + String(existCopies+i));
+            }
+
             await docs[0].save((err) => {
                 if(err){
                     return err

@@ -6,7 +6,8 @@ var bookSchema = new Schema({
     author: String,
     category: String,
     availableCopies: Number,
-    totalCopies: Number
+    totalCopies: Number,
+    bookIDs: [String] // unique ID for each book copy
     // have to add (branch) and (image) fields later
 })
 
