@@ -4,12 +4,9 @@ var Schema = mongoose.Schema
 var reservedBookSchema = new Schema({
     title: String,
     bookID: String,
-    borrower: String,
+    reservedPerson: String,
     reservedDate: Date,
-    reserveID: Number
-    //onHand:Boolean,
-    //penalty:Number,
-    //overDue:Boolean
+    lastDateToBorrow: Date // a book can be reserved for max 1 week
 })
 
 module.exports = mongoose.model('reservedBook',reservedBookSchema)

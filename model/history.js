@@ -1,6 +1,7 @@
 var mongoose = require('mongoose')
 var Schema = mongoose.Schema
 
+// to keep borrowed history
 var historySchema = new Schema({
     title: String,
     bookID: String,

@@ -11,8 +11,4 @@ var bookSchema = new Schema({
     // have to add (branch) and (image) fields later
 })
 
-// bookSchema.methods.reduceCopies = function(){
-//     this.numberOfCopiesAvailable = numberOfCopiesAvailable - 1
-// }
-
 module.exports = mongoose.model('book',bookSchema)

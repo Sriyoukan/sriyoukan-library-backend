@@ -1,38 +1,17 @@
 var express = require('express');
 var router = express.Router();
-// var bcrypt = require('bcrypt')
-// var crypto = require('crypto');
+
+// models
 var ReservedBook = require('../model/reservedBook')
 var Book = require('../model/book')
 var User = require('../model/user')
+
 var bp = require('body-parser')
 router.use(express.json())
 
-router.post('/reservedUpdate',(req,res,next)=>{
-    var D = new Date();
-    ReservedBook.find({borrower:req.body.borrower},(err,data)=>{
-        if(err){
-            return err
-        }else{
-            data.forEach(element => {
-                if(D.getDate()>element.returnDate.getDate() && element.onHand == false){
-                ReservedBook.deleteOne({title:element.title, borrower:element.borrower},{new:true},(err,data)=>{
-                    if(err){
-                        return err
-                    }else{
-                        return data
-                    }
-                })
-                }
-            });
-            res.status(200)
-        }
-    })
-})
-
+// to get all reserved books (user request)
 router.post('/reservedBook',(req,res,next)=>{
-    
-    ReservedBook.find({borrower:req.body.borrower},(err,data)=>{
+    ReservedBook.find({reservedPerson:req.body.userId}, (err,data)=>{
         if(err){
             return err
         }else{
@@ -52,96 +31,69 @@ router.get('/allReserved',(req,res,next)=>{
     })
 })
 
-router.post('/userReserveBook', function(req, res, next) {
-    var reservedBook = new ReservedBook()
-    var D = new Date()
-    
-    //this.number = this.number - 1
-    ReservedBook.find({title:req.body.title,borrower:req.body.borrower},(err,data)=>{
-        if(err){
-            return err
-        }else{
-            if(data.length !=0){
-                res.status(200).json(data)
-            }else{
-                reservedBook.title = req.body.title,
-                reservedBook.borrower = req.body.borrower,
-                reservedBook.onHand = false,
-                reservedBook.returnDate = D.setDate( D.getDate() + 1),
-                reservedBook.penalty = 0,
-                reservedBook.overDue = false
-    
-                reservedBook.save((err,data)=>{
-                 if(err){
-                    return err
-                    }else{
-                        Book.findOne({title:data.title},(err,data)=>{
-                            if(err){
-                                return err
-                            }else{
-                    
-                        this.number = data.numberOfCopiesAvailable
-                        if(this.number>0){
-                        
-                            Book.update({title:data.title},{ numberOfCopiesAvailable:this.number-1},{ new: true },(err,data,next)=>{
-                            if(err){
-                                return err
-                            }else{
-                                res.status(200).send()
-                                }
-                            })
-                        }else{
-                         res.send().status(500)
-                        }
-                    
-                        }   
-                    })
+// user request to reserve a book
+router.post('/reserveBook', function(req, res, next) {
+    async function reserve(request, response, next) {
+        const reservedBooks = await ReservedBook.find({reservedPerson: request.body.userId})
+        if(reservedBooks.length < 2) { // can able to reserve book
+            var D = new Date()
+            let reserveBook = new ReservedBook()
+            reserveBook.title = request.body.title
+            reserveBook.reservedPerson = request.body.userId
             
-            
-             }
-            })
-            }
-        }
-})
-})
-
-router.post('/adminAcceptBook',(req,res,next)=>{
-    var D = new Date()
-    ReservedBook.update({title: req.body.title,borrower:req.body.borrower},{onHand:true, returnDate:D.setDate( D.getDate() + 7)},(err,data)=>{
-        if(err){
-            return err
-        }else{
-            res.status(200).json(data)
-        }
-    })
-})
-
-router.post('/returnBook',(req,res,next)=>{
-    Book.findOne({title:req.body.title},(err,data)=>{
-        if(err){
-            return err
-        }else{
-            a = data.numberOfCopiesAvailable
-            if(a<data.totalCopies){
-            Book.updateOne({title:req.body.title},{numberOfCopiesAvailable: a+1},{new:true},(err,data,next)=>{
-                if(err){
+            let book = await Book.find({title: request.body.title})
+            let bookCopy = book[0].bookIDs.pop()
+            book[0].availableCopies = book[0].availableCopies - 1
+            await book[0].save((err) => {
+                if(err) {
                     return err
-                }else{
-                    next
                 }
-                
-            })
-            ReservedBook.findOneAndDelete({title:req.body.title,borrower:req.body.borrower},(err,data)=>{
-                if(err){
+            });
+
+            reserveBook.bookID = bookCopy
+            reserveBook.reservedDate = D
+            reserveBook.lastDateToBorrow = D.setDate(d.getDate() + 7);
+
+            // have to add history document later
+
+            await reserveBook.save((err, data) => {
+                if(err) {
                     return err
-                }else{
-                    res.status(200).json(data)
                 }
-            })
+                else {
+                    response.status(200).json(data)
+                }
+            });
+        }
+        else { // max number of books reserved - 2
+            response.status(200).json([])
         }
     }
-        
-    })
+
+    reserve(req, res, next);
+})
+
+// user request to relief reserved book
+router.post('/unReserveBook', function(req, res, next) {
+    async function unReserve(request, response, next) {
+        await ReservedBook.deleteOne({bookID: request.body.bookID})
+        let book = await Book.find({title: request.body.title})
+        book[0].bookIDs.push(request.body.bookID)
+        book[0].availableCopies = book[0].availableCopies + 1
+
+        // have to delete history document later
+
+        await book[0].save((err, data) => {
+            if(err) {
+                return err
+            }
+            else {
+                response.status(200).json(book[0])
+            }
+        })
+    }
+
+    unReserve(req, res, next);
 })
 
 router.post('/searchReserved',(req,res,next)=>{
@@ -154,5 +106,6 @@ router.post('/searchReserved',(req,res,next)=>{
     })
 })
 
+// have to add functionality for automatically ureserve book when max limit exceeds
 
 module.exports = router;
