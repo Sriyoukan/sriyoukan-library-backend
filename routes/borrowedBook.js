@@ -19,13 +19,12 @@ router.post('/borrowed', (req, res, next) => {
         book.borrower = request.body.userId
         book.borrowedDate = D
         book.returnDate = D.setDate(d.getDate() + 14) // allowed max 14 days
-
+        await ReservedBook.deleteOne({bookID: request.body.bookID})
         await book.save((err, data) => {
             if(err) {
                 return err
             }
             else {
-                await ReservedBook.deleteOne({bookID: request.body.bookID})
                 response.status(200).json(book)
             }
         })
@@ -40,7 +39,7 @@ router.post('/borrowed', (req, res, next) => {
 router.post('/returned', (req, res, next) => {
     async function returnBook(request, response, next) {
         await BorrowedBook.deleteOne({bookID: request.body.bookID})
-        let book = Book.find({title: request.body.title})
+        let book = await Book.find({title: request.body.title})
         book[0].availableCopies = book[0].availableCopies + 1
         book[0].bookIDs.push(request.body.bookID)
 
@@ -82,3 +81,5 @@ router.get('/myBorrowedBooks', (req, res, next) => {
         }
     })
 })
+
+module.exports = router;

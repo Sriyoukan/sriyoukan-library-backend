@@ -20,7 +20,7 @@ router.get('/book',(req,res,next)=>{
             response.status(200).json(book)
         }
         else {
-            const reservedBooks = await ReservedBooks.find({reservedPerson: request.body.userId})
+            const reservedBooks = await ReservedBook.find({reservedPerson: request.body.userId})
             if (reservedBooks.length === 0){
                 response.status(200).json(book)
             }
@@ -36,14 +36,14 @@ router.get('/book',(req,res,next)=>{
         }
     }
 
-    sendBook(req, res);
+    sendBook(req, res, next);
 })
 
 // to get all books from db and it additionally send details about book already reserved or not
-router.get('/allBook',(req,res,next)=>{
+router.get('/allBook',(req, res, next)=>{
     async function sendBook(request, response) {
         let books = await Book.find({})
-        const reservedBooks = ReservedBook.find({reservedPerson: request.body.userId})
+        const reservedBooks = await ReservedBook.find({reservedPerson: request.body.userId})
         if (reservedBooks.length === 0) {
             response.status(200).json(books)
         }
@@ -66,6 +66,18 @@ router.get('/allBook',(req,res,next)=>{
     }
 
     sendBook(req, res);
+})
+
+// request by admin
+router.get('/allBookByAdmin', (req, res, next) => {
+    Book.find({}, (err, data) => {
+        if (err) {
+            return err
+        }
+        else {
+            res.status(200).json(data)
+        }
+    })
 })
 
 // later

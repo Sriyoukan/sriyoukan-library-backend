@@ -3,7 +3,7 @@ var Schema = mongoose.Schema
 
 var borrowedBookSchema = new Schema({
     title: String,
-    bookID: String,
+    bookID: {type: String, unique: true},
     borrower: String,
     borrowedDate: Date,
     returnDate: Date

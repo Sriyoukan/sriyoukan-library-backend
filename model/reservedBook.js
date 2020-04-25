@@ -3,7 +3,7 @@ var Schema = mongoose.Schema
 
 var reservedBookSchema = new Schema({
     title: String,
-    bookID: String,
+    bookID: {type: String, unique: true},
     reservedPerson: String,
     reservedDate: Date,
     lastDateToBorrow: Date // a book can be reserved for max 1 week

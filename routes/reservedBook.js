@@ -52,7 +52,7 @@ router.post('/reserveBook', function(req, res, next) {
 
             reserveBook.bookID = bookCopy
             reserveBook.reservedDate = D
-            reserveBook.lastDateToBorrow = D.setDate(d.getDate() + 7);
+            reserveBook.lastDateToBorrow = D.setDate(D.getDate() + 7);
 
             // have to add history document later
 
@@ -97,7 +97,7 @@ router.post('/unReserveBook', function(req, res, next) {
 })
 
 router.post('/searchReserved',(req,res,next)=>{
-    ReservedBook.find({borrower:req.body.search},(err,data)=>{
+    ReservedBook.find({reservedPerson: req.body.search},(err,data)=>{
         if(err){
             return err
         }else{
