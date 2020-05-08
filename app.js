@@ -11,7 +11,17 @@ var multer  = require('multer')
 var upload = multer({ dest: 'uploads/' })
 var userRoute = require('./routes/user')
 var mongoose = require('mongoose');
+
 mongoose.connect('mongodb://localhost/library',{ useNewUrlParser: true ,useUnifiedTopology: true})
+mongoose.set('useCreateIndex', true);
+
+// to make sure db connected successfully or not
+mongoose.connection.once('open', () => {
+  // we're connected!
+  console.log("Database conected successfully to the server");
+}).on('error', (error) => {
+  console.log('connection error: ', error);
+});
 
 var app = express();
 app.set('views', path.join(__dirname, 'views'));

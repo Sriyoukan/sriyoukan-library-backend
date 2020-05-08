@@ -1,7 +1,7 @@
 var express = require('express');
 var router = express.Router();
-var bcrypt = require('bcrypt')
-var crypto = require('crypto');
+// var bcrypt = require('bcrypt')
+// var crypto = require('crypto');
 var multer  = require('multer')
 var upload = multer({ dest: 'uploads/' })
 var Book = require('../model/book')
@@ -17,6 +17,7 @@ router.get('/book',(req,res,next)=>{
         }
     })
 })
+
 router.get('/allBook',(req,res,next)=>{
     Book.find((err,data)=>{
         if(err){
@@ -26,6 +27,7 @@ router.get('/allBook',(req,res,next)=>{
         }
     })
 })
+
 router.post('/uploadfile', upload.single('file'), (req, res, next) => {
     const file = req.file
     if (!file) {
@@ -33,9 +35,8 @@ router.post('/uploadfile', upload.single('file'), (req, res, next) => {
       error.httpStatusCode = 400
       return next(error)
     }
-      res.send(file)
-    
-  })
+    res.send(file)
+})
 
 router.post('/book', function(req, res, next) {
     var book = new Book()
@@ -51,18 +52,17 @@ router.post('/book', function(req, res, next) {
         }else{
             return res.send(book)
         }
+    })   
+})
 
+router.post('/search',(req,res,next)=>{
+    Book.find({title:{ "$regex": req.body.search, "$options": "i" }},(err,data)=>{
+        if(err){
+            return err
+        }else{
+            res.status(200).json(data)
+        }
     })
-       
- })
- router.post('/search',(req,res,next)=>{
-     Book.find({title:{ "$regex": req.body.search, "$options": "i" }},(err,data)=>{
-         if(err){
-             return err
-         }else{
-             res.status(200).json(data)
-         }
-     })
- })
+})
 
 module.exports = router;
