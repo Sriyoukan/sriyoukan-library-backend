@@ -10,6 +10,7 @@ var reservedBookRoute = require('./routes/reservedBook')
 var multer  = require('multer')
 var upload = multer({ dest: 'uploads/' })
 var userRoute = require('./routes/user')
+var borrowedBookRoute = require('./routes/borrowedBook')
 var mongoose = require('mongoose');
 
 mongoose.connect('mongodb://localhost/library',{ useNewUrlParser: true ,useUnifiedTopology: true})
@@ -34,9 +35,12 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({extended: true, limit: '10mb' }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+
 app.use(bookRoute)
 app.use(reservedBookRoute)
 app.use(userRoute)
+app.use(borrowedBookRoute)
+
 app.use(function(req, res, next) {
   next(createError(404));
 });
