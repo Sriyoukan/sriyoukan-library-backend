@@ -7,7 +7,8 @@ var Book = require('../model/book')
 var ReservedBook = require('../model/reservedBook')
 var ReservedRoute = require('../routes/reservedBook')
 var bp = require('body-parser')
-var notification = false
+var notification = false;
+const jwt = require('jsonwebtoken');
 
 router.use(express.json())
 
@@ -20,42 +21,98 @@ router.get('/user',(req,res)=>{
             }
         })
 })
-router.post('/user',(req,res,next)=>{
+
+//=============================================================
+
+// router.post('/user',(req,res,next)=>{
+//     var user = new User()
+//     user.name=req.body.name,
+//     user.age=req.body.age,
+//     user.Id=req.body.Id,
+//     user.isAdmin = req.body.isAdmin
+    
+//     user.setPassword(req.body.password)
+//     user.save((err)=>{
+//     if (err){
+//       return next(err);
+//     }else {
+//       res.status(200).json(user)
+//         }
+//     })
+
+// })
+
+
+
+// Register a new user
+router.post('/register', (req,res,next)=>{
     var user = new User()
     user.name=req.body.name,
     user.age=req.body.age,
     user.Id=req.body.Id,
     user.isAdmin = req.body.isAdmin
     
-
     user.setPassword(req.body.password)
-    user.save((err)=>{
-    if (err){
-      return next(err);
-    }else {
-      res.status(200).json(user)
+    user.save((err, user)=>{
+        if (err){
+            console.log("Error in registering user", err);
+            return next(err);
+        }else {
+            let payload = { subject: user._id }
+            let token = jwt.sign(payload, 'secretKey')
+            res.status(200).json({token: token, category: "user"})
         }
     })
-
 })
 
-router.post('/user/login',(req,res,next)=>{
+// router.post('/user/login',(req,res,next)=>{
   
-    User.findOne({Id : req.body.Id},async (err,data)=>{
+//     User.findOne({Id : req.body.Id},async (err,data)=>{
       
-      if (err){
-        return "err";
-      }else{
-        user = new User(data)
-        result =  user.validatePassword(req.body.password,user)
-        if(result){
-          return res.json(user)
+//       if (err){
+//         return "err";
+//       }else{
+//         user = new User(data)
+//         result =  user.validatePassword(req.body.password,user)
+//         if(result){
+//           return res.json(user)
+//         }else{
+//           return result
+//         }
+//       }
+//     })
+//  })
+
+// Login user
+router.post('/login',(req,res,next)=>{
+  
+    User.findOne({Id : req.body.Id}, (error,user)=>{
+        if (error){
+            console.log(error);
+            res.status(401).json('Invalid userId');
         }else{
-          return result
+            if(!user) {
+                res.status(401).json('Invalid userId');
+            }
+            else{
+                user_instance = new User();
+                let result =  user_instance.validatePassword(req.body.password,user)
+                if(!result) {
+                    res.status(401).json('Invalid password');
+                }
+                else{
+                    let payload = { subject: user._id }
+                    let token = jwt.sign(payload, 'secretKey')
+                    let userType = user.isAdmin?"admin":"user";
+                    res.status(200).json({token: token, category: userType})
+                }
+            }
+
         }
-      }
     })
- })
+})
+
+//===================================================================
 
 router.get('/notificationStatus',(req,res,next)=>{
    

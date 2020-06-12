@@ -7,7 +7,7 @@ var userSchema = new Schema({
     age: String,
     Id:{type:String, unique:true},
     isAdmin:Boolean,
-    password:String,
+    // password:String,
     salt : String,
     hash : String
 })
@@ -22,7 +22,7 @@ userSchema.methods.validatePassword = async (password,user)=>{
     if(newHash===user.hash){
         return true
     }else{
-        return "Password is not match"
+        return false
     }
 }
 
